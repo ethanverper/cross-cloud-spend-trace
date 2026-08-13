@@ -1,0 +1,7 @@
+[tool.uv.workspace]
+members = [
+    "collectors/common",
+    "collectors/aws",
+    "collectors/snowflake",
+    "collectors/databricks",
+]

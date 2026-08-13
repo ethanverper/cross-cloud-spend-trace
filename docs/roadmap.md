@@ -1,0 +1,124 @@
+# spend-lens — Roadmap
+
+Domain: technology
+Path: `projects/technology/spend-lens/`
+Selected from: [`docs/ideation/technology/2026-08-12-data-engineering-shortlist.md`](../../../../docs/ideation/technology/2026-08-12-data-engineering-shortlist.md) ("Credit Watch", idea 3 of 5 — substantially reshaped through direct conversation with Ethan into **spend-lens**; see `docs/decisions/0001-project-selection-and-reshaping.md` for what changed and why)
+Stakeholder: Ethan (human operator)
+Started: 2026-08-12
+
+## Goal
+
+Give data/engineering teams real-time visibility into exactly which query, job, or pipeline is driving their cloud/warehouse spend — with a forecasted month-end bill and concrete optimization suggestions — before the invoice arrives, across AWS, Snowflake, and Databricks in one place. Same class of clear, obvious business value as Factor Lens's "why does my portfolio behave this way" pitch, aimed at any engineering manager who's felt a surprise cloud bill.
+
+## Definition of done (v1)
+
+A working dashboard that, from **real (small-scale, not synthetic) usage/billing data** pulled from three live sources — AWS Cost Explorer/Billing API, Snowflake query-history-based cost attribution, and Databricks job-level usage/billing API — shows:
+
+1. Spend broken down by source / query / job / model.
+2. Anomaly detection on cost spikes.
+3. A forecasted month-end bill, per source and combined.
+4. Concrete, specific optimization suggestions grounded in the actual ingested data (e.g. "this Databricks job re-scans the full table every run; partitioning would cut cost by X%") — not generic advice.
+
+All verified by `qa-tester` against real ingested data end-to-end, a `cyber-security` pass on credential handling across all three cloud connections (even at read-only scope), and full compliance with `docs/project-standards.md`'s section/interactivity/decomposition requirements *before* QA sign-off — not retrofitted after multiple feedback rounds, the way Factor Lens's identity/interactivity/decomposition work had to be.
+
+## Why this project, why this shape
+
+Scoped against `docs/about-me.md`'s "why these projects exist" lens:
+
+- **Industry-trend grounding**: data FinOps is actively forming into its own discipline with dedicated tooling this year (Snowflake Resource Monitors/Query Attribution, Flexera/Keebo/Revefi, the FinOps Foundation naming data-cloud spend a growing priority) — per the source research brief.
+- **Real corporate-skill value**: cost attribution and forecasting is a discipline Ethan has practiced directly — Tesla supplier warranty cost attribution, Pan-American Life financial/claims data validation and Power BI reporting — re-pointed at a new cost object (compute, not claims/warranty).
+- **Specialized, named tools weighted toward big-tech job-posting relevance** (`docs/about-me.md` point 3, Ethan's explicit 2026-08-12 ask): AWS, Snowflake, Databricks, PySpark, Docker — not the smallest possible generic stack.
+- **Deliberate CV balance**: AWS (Cost Explorer/Billing) and PySpark reinforce Ethan's existing Tesla/S3/Lambda/Redshift experience; Snowflake cost-attribution work deepens an existing but shallow PSL Group line; Databricks (job-level cost attribution) and Docker (per-source containerized collectors) are genuinely new tools — high resume value.
+- **Scope discipline**: v1 is AWS + Snowflake + Databricks only. Azure and GCP cost APIs are explicit, named v2/v3 — a deliberate call Ethan made directly ("no me quiero comer el mundo en un proyecto"), not a default. Holding this line is this project's single biggest execution risk (see RAID).
+
+## Phases (v1)
+
+Sequenced by real dependency. Phase 1 is a **human-only, blocking prerequisite** — no agent may start Phase 2 until Ethan confirms it's done.
+
+- [x] Phase 1 — **Prerequisite: Live Account Creation & Minimal Real Activity** (owner: **Ethan, human**) — DONE 2026-08-12: All three accounts created and verified live, directly with Ethan walking through each console step by step (no agent touched signup, payment, or login at any point). **AWS**: account created, IAM user `spend-lens-collector` with a least-privilege policy scoped to exactly three resources (Cost Explorer read actions, one S3 bucket, one Lambda function — iterated twice to fix a JSON-paste error and a bucket-name mismatch before it was correct), Cost Explorer enabled, real activity generated (S3 uploads, Lambda invocations). One real incident: Ethan pasted the live access key/secret directly into chat — flagged immediately, key rotated before use, never stored or logged by any agent. **Snowflake**: trial account created (a first signup attempt landed in a "CoCo" paid-upsell onboarding flow with no visible skip; resolved by a fresh signup explicitly choosing "AI Data Cloud For Enterprise" over "Snowflake CoCo For Developers"), `SPEND_LENS_WH` (X-Small, 60s auto-suspend) created, ~15 real queries run against the built-in `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1` dataset, dedicated `SPEND_LENS_READER` role + `SPEND_LENS_SVC` user created with `IMPORTED PRIVILEGES` on `SNOWFLAKE` + `IMPORTED PRIVILEGES` on `SNOWFLAKE_SAMPLE_DATA` (not individual per-schema grants — imported/shared databases reject those, confirmed by a real `SQL compilation error` during setup) — no `ACCOUNTADMIN` credential used. **Databricks**: Express trial created via the "For work" 14-day/$400-credit path (not "For personal use" Free Edition, deliberately — the free tier was assessed as more likely to strip system/billing tables entirely), PySpark job run repeatedly against a built-in sample dataset, scoped personal access token generated. **Real, load-bearing finding**: `system.billing.usage` is confirmed **not available** on this trial tier — the `billing` schema exists (`SHOW SCHEMAS IN system` lists it) but contains zero tables (`SHOW TABLES IN system.billing` → 0 rows), and the Account Console's own upgrade path requires a credit card, which Ethan correctly did not enter. **This changes Phase 2's Databricks collector from a system-tables read to a Jobs API–based approach — not a fallback to verify, a confirmed requirement.**
+- [ ] Phase 2 — Foundation & Data Integration (`developer`) — **SUBSTANTIALLY COMPLETE 2026-08-12, not marked DONE**: AWS + Snowflake fully built, Dockerized, and verified end-to-end against real live data; Databricks fully built and Dockerized but **live verification blocked by a credential issue that needs Ethan to resolve** (see below) — this phase stays open until that's fixed and re-verified.
+
+  **What was built**: three independent Dockerized collectors (`collectors/aws`, `collectors/snowflake`, `collectors/databricks`), sharing a common schema/storage library (`collectors/common`) via a uv workspace (root `pyproject.toml` + `uv.lock`). Every collector lands normalized `UsageRecord`s as partitioned Parquet under `data/raw/<source>/<table>/ingested_date=.../`, directly `spark.read.parquet()`-able for Phase 3. Full rationale, per-source API gotchas, and two real environment bugs hit and fixed during this phase are logged in `docs/decisions/0002-phase2-raw-store-and-collector-architecture.md`.
+
+  **AWS — fully verified against real Cost Explorer data.** `uv run python -m aws_collector` against the real `spend-lens-collector` IAM credentials returned **29 real daily cost-and-usage records** (2026-07-29 → 2026-08-12, real S3/CloudWatch service costs — small dollar amounts as expected for free-tier test activity, e.g. Amazon S3 ≈ $0.000005/day, real `UsageQuantity`/`UsageUnit` values, not zeros/nulls), a real month-end **cost forecast** record (2026-08-13 → 2026-09-01), and 3 real **active service dimension values**. All 3 live integration tests (`collectors/aws/tests/test_aws_collect.py`) pass against the live account.
+
+  **Snowflake — fully verified against real `ACCOUNT_USAGE` data.** `uv run python -m snowflake_collector` against the real `SPEND_LENS_SVC` credentials returned **167 real `QUERY_HISTORY` records** (48 against `SPEND_LENS_WH` — a mix of the ~15 real test `SELECT`s against `SNOWFLAKE_SAMPLE_DATA` plus the real `GRANT`/`CREATE_USER`/`CREATE_ROLE`/`ALTER_USER` queries Phase 1's own setup ran; 114 against the account's default `COMPUTE_WH`) and **4 real `WAREHOUSE_METERING_HISTORY` records**, including real non-zero credit burn on `SPEND_LENS_WH` (≈0.222 credits) — `ACCOUNT_USAGE`'s replication latency was not an issue by verification time (enough time had passed since Phase 1's test queries). All 3 live integration tests (`collectors/snowflake/tests/test_snowflake_collect.py`) pass, including a direct check that the connection actually authenticates as `SPEND_LENS_READER`/`SPEND_LENS_WH`, not a broader role.
+
+  **Databricks — built and Dockerized, live verification blocked.** Every real API call (`GET /api/2.1/jobs/runs/list`, and a minimal direct `GET /api/2.0/clusters/list` used to isolate the problem) returned `401 Unauthorized` with Databricks' own error body: `"Credential was not sent or was of an unsupported type for this API."` Root-cause investigation (not a guess-fix) confirmed: the collector's `Authorization: Bearer <token>` header construction is correct, `.env` parsing isn't truncating/corrupting the host or token (loaded string lengths match the raw file exactly), and `DATABRICKS_HOST` is a well-formed workspace URL. This points to the credential itself — **Ethan needs to verify the token was generated via User Settings → Developer → Access tokens (not a different credential type) and isn't expired/revoked, and regenerate it if needed.** Once a valid token is in `.env`, re-running `uv run python -m databricks_collector` (or `docker compose run --rm databricks-collector`) is the only remaining step — no code change is expected to be needed.
+
+  **Two real environment bugs hit and fixed during this phase** (both logged in decision 0002): (1) a macOS-only interaction bug between `uv`'s editable installs (which set the macOS `UF_HIDDEN` flag on their `.pth` files) and CPython 3.11.14's `site.py` (which skips hidden `.pth` files) that made every collector's own package unimportable via plain `uv run` on this machine — worked around locally, doesn't affect Linux-based Docker builds; (2) all three collectors' live-test `skipif` guards were checking `os.environ` before `.env` had actually been loaded into the process, so they silently skipped even with real credentials present — fixed by loading `.env` at each test module's import time, before the skip check runs.
+
+  **Still open / explicitly not done in this phase**: Docker build/run itself was not executed in this session (no working Docker runtime in the build sandbox — see decision 0002 item 8); Ethan should run `docker compose build && docker compose run --rm <name>` locally once the Databricks credential is fixed. Databricks live data is not yet confirmed. Phase 3's PySpark job will need an explicit upload/sync step to make `data/raw/` reachable from actual Databricks compute (decision 0002 item 1).
+- [ ] Phase 3 — Cost Attribution, Aggregation & Forecast Core (`developer`): PySpark job(s) running on Databricks process/aggregate the raw usage/billing logs at volume into one unified spend-by-source/query/job/model data model. Anomaly-detection logic on cost spikes. Month-end forecast logic (run-rate/trend-based projection from partial-month data). A rules engine that generates concrete, data-grounded optimization suggestions (e.g. detecting a Databricks job that re-scans a full table every run and suggesting partitioning) — reads real ingested query/job metadata, not templated text.
+- [ ] Phase 4 — Brand & Identity Direction (`brand-creative`): Before the first significant UI build (`docs/project-standards.md` rule 4) — naming/wordmark treatment, color story, type system, motion language, product personality; the rule-14 landing-screen structure (30-second comprehension test); and the rule-15 content-decomposition plan for whatever it owns per rule 15's ownership line (Overview, Real World / Corporate Applications, Tools & Technologies, References & Formulas).
+- [ ] Phase 5 — Dashboard, KPI Definition & Forecast Visualization (`business-intelligence`): React (Vite + TypeScript) + Tailwind + shadcn/ui dashboard (rule 4 default stack) implementing the full section set from rule 1 — Overview, Inputs (constrained per rule 2: dropdowns for source/date-range/job, no free text reaching the backend), Results (spend by source/query/job/model, anomaly flags, forecast chart — real visual presence per rule 6, following the `dataviz` skill), Tools & Technologies, References & Formulas, standard rule-8 features (one-click sample/demo mode using the real small-scale data already ingested, export/share, social preview metadata). **Also owns rule 9a's Interpretation & Key Takeaways section** — framed as "what this spend pattern implies / what's worth investigating," never prescriptive financial or trading advice — since `business-intelligence`, not `quant-analyst`, owns this project's underlying methodology (pure cost aggregation and reporting, no statistical/financial model). Per rule 15, plans its own content decomposition (lead/bullets/callout/pull-quote/example) for the Interpretation section *before* implementation — this project does not get a "sixth round of feedback" repeat of Factor Lens's rule-15 gap.
+- [ ] Phase 6 — Learning & Glossary (`educator`): Dual-register (technical + plain-language) Learning section explaining cost-attribution/forecast/anomaly-detection mechanics, and a project glossary — real interactive/visual elements per rule 5 (progressive disclosure, not text walls), and its own rule-15 content-decomposition plan for this content, done at build time, not retrofitted.
+- [ ] Phase 7 — Security Review: Multi-Cloud Credential Handling (`cyber-security`): Review credential storage/scoping across all three cloud connections even though everything is read-only-scope — least-privilege IAM policy / Snowflake role / Databricks service-principal scoping, secrets never baked into Docker images or committed to git, Docker image hygiene for each collector, blast-radius containment per source (a compromised AWS credential shouldn't expose Snowflake/Databricks access and vice versa).
+- [ ] Phase 8 — Verification & QA Sign-off (`qa-tester`): Verify against the definition of done above using the real ingested data from all three sources (not synthetic). Edge cases: a source with zero/near-zero activity, a forecast built on too little history, anomaly detection against a single data point, a source collector temporarily unreachable. Full `docs/project-standards.md` compliance pass (section completeness, rule 16's entity-decoding grep, rule 15 decomposition spot-check, no financial-advice-style language in Interpretation & Key Takeaways).
+- [ ] Phase 9 — Publish (`developer`, gated by Ethan's explicit go-ahead in the moment): Create the dedicated public GitHub repo (`github.com/ethanverper/spend-lens`), prepare a clean README, push — including this project's `docs/roadmap.md` and `docs/decisions/` alongside the code, per the team's publishing standard.
+- [ ] Phase 10 — Deploy (`devops`, gated by Ethan's explicit go-ahead in the moment): Deploy to Railway per `docs/project-standards.md` rule 3. Explicit call-out: this project's live deployment holds three sets of real (if low-privilege, read-only-scope) cloud credentials as secrets — configured as Railway environment variables, never committed, never baked into any Docker image. `devops` never handles the raw credential values on Ethan's behalf per its standing mandate; Ethan enters them directly into Railway's secret store.
+
+## RAID
+
+**Risks:**
+- Free-trial/free-tier time windows are real constraints: Snowflake's trial is 30 days (or until its $400 credit is exhausted), Databricks' free-trial credit window is 14 days. If the build stalls, source access or the ability to keep generating real activity could lapse before the project ships — track the build timeline against this window once Phase 1 is done, and flag to Ethan if Phase 2/3 risks running past it.
+- AWS requires a real payment method even for free-tier signup. Trivial test activity (a small S3 upload, a handful of Lambda invocations) is well within the AWS Free Tier's always-free limits (5GB S3, 1M Lambda requests/month) and very unlikely to incur real cost, but this is not literally zero risk — Ethan should avoid provisioning anything beyond the checklist below (e.g. no Redshift cluster, no EC2 instance) without checking pricing first.
+- ~~Databricks' exact usage/billing API surface on a free-trial workspace isn't confirmed yet~~ **Resolved in Phase 1**: confirmed neither `system.billing.usage` nor an Account Console billing API is available on the Express-signup trial workspace without upgrading to a paid plan. Phase 2 builds directly against the Jobs API — no verification step needed, no risk of committing to the wrong API shape.
+- Three separate live cloud credential sets is real credential-handling surface area for a portfolio project. Mitigated by Phase 7's dedicated security pass, but `devops` never handles live credentials on Ethan's behalf per its standing mandate — Phase 10's deployment handoff needs Ethan to enter secrets into Railway directly, not assume an agent can do it.
+
+**Assumptions:**
+- Snowflake's `ACCOUNT_USAGE` views have documented latency (up to ~45 minutes–3 hours) before new activity appears — the Phase 1 checklist below has Ethan generate query activity with enough lead time before Phase 2's collector testing, not immediately before.
+- AWS Cost Explorer must be explicitly enabled (it's off by default) and current-month data takes ~24 hours to populate after first enabling — the checklist has Ethan enable this on day 1, before generating any other AWS activity, so it has time to warm up.
+- "Minimal real activity" is sufficient to demonstrate the attribution/forecast/anomaly mechanism even at near-zero dollar amounts — the point is real API responses with real structure and real (if tiny) numbers, not a dollar-value showcase. If any source's real activity turns out too sparse to demonstrate anomaly detection meaningfully, Phase 3 will need a documented, clearly-labeled synthetic overlay for that one specific feature — not a silent fallback.
+
+**Dependencies:**
+- Phase 2 is fully blocked on Phase 1 (human-only action) — no agent may start live-API integration work until Ethan confirms all three accounts exist and have generated real, measurable activity.
+- Phase 3 depends on Phase 2's collectors returning real, structured data from all three sources.
+- Phase 5 (dashboard) depends on Phase 3's aggregation/forecast/anomaly-detection logic being stable and producing real output to visualize.
+- Phase 9/10 (Publish/Deploy) depend on Phase 8's QA sign-off.
+
+**Explicitly deferred (not v1 scope, tracked for continuity per the idea's own scalability case):**
+- v2 — Azure Cost Management API and GCP Billing API connectors, same pluggable-connector pattern, cross-platform unified view.
+- v3 — automated optimization suggestions that generate a pull request (e.g. converting a Databricks job to a partitioned read) rather than just flagging the problem in a dashboard.
+
+---
+
+## Phase 1 checklist — hand to Ethan verbatim
+
+Three accounts, three platforms. Do AWS first (Cost Explorer needs ~24h lead time to start showing data), then Snowflake and Databricks in either order. No agent will touch any of this — signup, payment info, and login are yours to do.
+
+### 1. AWS
+
+1. Go to `aws.amazon.com` → **Create an AWS Account**. AWS requires a valid payment method even for free-tier signup — this is unavoidable on their side, not a spend-lens requirement. Use email/phone verification as prompted.
+2. Once in the console: **enable MFA on the root user**, then go to **IAM → Users → Create user**. Create a dedicated IAM user for spend-lens (e.g. `spend-lens-collector`) — never use root credentials for anything programmatic.
+3. Attach a **least-privilege policy** to that user: `ce:GetCostAndUsage`, `ce:GetCostForecast`, `ce:GetDimensionValues` (Cost Explorer, read-only), plus scoped `s3:PutObject`/`s3:GetObject` on one new bucket you'll create for test activity, and `lambda:InvokeFunction`/`lambda:GetFunction` on one test function. Do not grant broader access than this.
+4. Generate an **access key** for that IAM user (Security credentials tab) — save the access key ID and secret access key somewhere safe (a password manager or a local, never-committed file). You'll hand these to `developer` later via environment variables, not by adding them to any code or committing them anywhere.
+5. Go to **Billing and Cost Management → Cost Explorer** and click to enable it (it's off by default). Do this on day 1 — current-month data takes ~24 hours to start populating, and this needs lead time before Phase 2 collector testing.
+6. Generate minimal real activity, staying within AWS's always-free limits:
+   - Create one small S3 bucket, upload a handful of small test files to it (well under the 5GB/month free tier).
+   - Create one trivial "hello world" Lambda function (Python, default template is fine) and invoke it manually a handful of times (well under the 1M requests/month free tier).
+   - Do **not** provision Redshift, EC2, or anything else not listed here without checking pricing first — those can incur real cost quickly.
+
+### 2. Snowflake
+
+1. Go to `signup.snowflake.com` → start a **free trial**. No credit card is required. Choose **Standard edition**, and pick AWS as the cloud provider (keeps things simple, matches the AWS account above) and a region close to you.
+2. Verify your email, log in to Snowsight.
+3. Create a small virtual warehouse (**X-Small**, with **auto-suspend set to 60 seconds** to conserve trial credit).
+4. Load a small dataset into a table — either use Snowsight's built-in sample-data quickstart, or upload a small CSV yourself (a few hundred rows is plenty).
+5. Run **10-20 real queries** against it over a couple of sessions (a mix of `SELECT`s, a `JOIN`, an aggregate/`GROUP BY`) — spread across at least a few hours, ideally more than one day, so there's a real pattern to attribute cost against, not one burst.
+6. **Important timing note**: Snowflake's `ACCOUNT_USAGE` views (what spend-lens's collector reads) can take **up to ~45 minutes to 3 hours** to reflect new query activity. Run your queries well before Phase 2's collector-testing session, not right before it.
+7. Create a dedicated role/service user for spend-lens with `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database (needed to read `ACCOUNT_USAGE`) plus `USAGE` on your warehouse/database — do not use `ACCOUNTADMIN` for the collector's credentials. Use key-pair authentication if convenient, or a strong dedicated password.
+
+### 3. Databricks
+
+1. Go to `databricks.com` and start a **free trial** using **Express signup** (email-only — this does not require an AWS account or payment method up front, and gives you a serverless workspace immediately). **Use a business/work email if you have one available** — personal-email trial signups carry extra resource-scaling limitations.
+2. Once in the workspace, create a small notebook and run a tiny **PySpark job** — even something trivial (read a small built-in sample dataset, run a `groupBy`/aggregate, write output) is enough to generate real job-run activity. Run it a handful of times over a day or two, not just once.
+3. Check what usage/billing surface your trial workspace actually exposes — this determines Phase 2's exact integration approach, so note what you find and pass it along:
+   - In the workspace, try querying the `system.billing.usage` system table (if system tables are enabled/visible for your trial).
+   - In the **Account Console** (admin settings), check whether a **Usage** or **Billing** section is visible and whether it exposes an API.
+   - If neither is available on this trial tier, flag it — Phase 2 will need a fallback (e.g. attributing cost via Jobs API cluster runtime as a proxy) rather than a true billing API.
+4. Generate a personal access token (**User Settings → Developer → Access tokens**) scoped to your own trial workspace — this becomes the credential `developer` uses in Phase 2 (handed off the same way as AWS/Snowflake: env vars, never committed).
+
+### When you're done
+
+Confirm back that all three accounts exist, real activity has been generated in each (per the steps above), and — for Snowflake specifically — that enough time has passed since your last test query for `ACCOUNT_USAGE` to reflect it. That's the signal Phase 2 can start.

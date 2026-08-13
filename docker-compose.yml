@@ -1,0 +1,48 @@
+# Three independent, one-shot collector services. Each is a batch job, not
+# a long-running server — trigger a single collection pass with, e.g.:
+#   docker compose run --rm aws-collector
+#   docker compose run --rm snowflake-collector
+#   docker compose run --rm databricks-collector
+# `docker compose up` also works (runs all three once, in parallel, then
+# exits) since none of them restart on their own.
+#
+# All three share one bind-mounted raw store (./data/raw on the host) so
+# landed Parquet files are visible outside the containers immediately, and
+# to each other's containers if a later phase needs cross-source reads.
+
+services:
+  aws-collector:
+    build:
+      context: .
+      dockerfile: collectors/aws/Dockerfile
+    env_file:
+      - .env
+    environment:
+      RAW_DATA_DIR: /data/raw
+    volumes:
+      - ./data/raw:/data/raw
+    restart: "no"
+
+  snowflake-collector:
+    build:
+      context: .
+      dockerfile: collectors/snowflake/Dockerfile
+    env_file:
+      - .env
+    environment:
+      RAW_DATA_DIR: /data/raw
+    volumes:
+      - ./data/raw:/data/raw
+    restart: "no"
+
+  databricks-collector:
+    build:
+      context: .
+      dockerfile: collectors/databricks/Dockerfile
+    env_file:
+      - .env
+    environment:
+      RAW_DATA_DIR: /data/raw
+    volumes:
+      - ./data/raw:/data/raw
+    restart: "no"
