@@ -47,7 +47,19 @@ def detect_anomalies(
     `row_id_col`, if given, is carried through unchanged so the caller can
     identify which specific record was scored — group_cols alone often
     isn't a unique key for a row (many rows share a group).
+
+    Rows with a null `value_col` (e.g. Snowflake/Databricks records with
+    no `cost_usd`) are scored as `status="no_value"` and never counted
+    into another row's baseline — a group mixing null and non-null values
+    would otherwise silently miscount `n_other` for the non-null rows
+    (the window functions below count/sum only non-null values, but a
+    null row's own "everyone else" baseline still needs to exclude
+    itself correctly; splitting the two cases up front is simpler and
+    more obviously correct than making the arithmetic below branch on it).
     """
+    null_rows = df.filter(F.col(value_col).isNull())
+    df = df.filter(F.col(value_col).isNotNull())
+
     w = Window.partitionBy(*group_cols)
 
     n = F.count(F.col(value_col)).over(w)
@@ -102,7 +114,17 @@ def detect_anomalies(
         )
         .withColumn("anomaly", F.col("status") == F.lit("anomaly"))
     )
-    return out
+
+    null_out = (
+        null_rows.withColumn("group_n_other", F.lit(None).cast("long"))
+        .withColumn("baseline_mean", F.lit(None).cast("double"))
+        .withColumn("baseline_stddev", F.lit(None).cast("double"))
+        .withColumn("z_score", F.lit(None).cast("double"))
+        .withColumn("status", F.lit("no_value"))
+        .withColumn("anomaly", F.lit(False))
+    )
+
+    return out.unionByName(null_out)
 
 
 __all__ = ["detect_anomalies"]
