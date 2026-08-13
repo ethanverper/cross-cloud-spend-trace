@@ -1,0 +1,38 @@
+# Build context for all three collectors is the repo root (see
+# docker-compose.yml / collectors/*/Dockerfile). None of these are ever
+# COPY'd into an image today -- each Dockerfile explicitly whitelists only
+# pyproject.toml/uv.lock and the specific collectors/*/src it needs -- but
+# excluding them here means the build context sent to the Docker daemon
+# never includes secrets, VCS history, or local data either, as defense in
+# depth against a future accidental `COPY .`. See
+# docs/decisions/0008-phase7-security-review.md finding 3.
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# VCS
+.git/
+.gitignore
+
+# Local data / outputs -- real (if small-scale) landed usage data and
+# pipeline output, not needed by any collector's own build.
+data/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend (not part of any collector image)
+frontend/node_modules/
+frontend/dist/
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/

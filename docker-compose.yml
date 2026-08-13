@@ -9,15 +9,27 @@
 # All three share one bind-mounted raw store (./data/raw on the host) so
 # landed Parquet files are visible outside the containers immediately, and
 # to each other's containers if a later phase needs cross-source reads.
+#
+# Credential scoping (docs/decisions/0008-phase7-security-review.md finding
+# 1): each service lists only its own source's credential env vars,
+# explicitly, rather than `env_file: .env` (which would inject all three
+# sources' credentials into every container's process environment). Compose
+# still reads the root `.env` automatically for `${VAR}` interpolation below
+# -- this is Compose's own file-interpolation mechanism, distinct from
+# `env_file:`, so Ethan's single `.env` file doesn't need to be split. A
+# compromised AWS collector process (e.g. via a malicious/vulnerable
+# dependency) can now only ever read AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY
+# from its own environment, not Snowflake's password or the Databricks
+# token, and likewise for the other two services.
 
 services:
   aws-collector:
     build:
       context: .
       dockerfile: collectors/aws/Dockerfile
-    env_file:
-      - .env
     environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       RAW_DATA_DIR: /data/raw
     volumes:
       - ./data/raw:/data/raw
@@ -27,9 +39,12 @@ services:
     build:
       context: .
       dockerfile: collectors/snowflake/Dockerfile
-    env_file:
-      - .env
     environment:
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+      SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE}
+      SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE}
       RAW_DATA_DIR: /data/raw
     volumes:
       - ./data/raw:/data/raw
@@ -39,9 +54,9 @@ services:
     build:
       context: .
       dockerfile: collectors/databricks/Dockerfile
-    env_file:
-      - .env
     environment:
+      DATABRICKS_HOST: ${DATABRICKS_HOST}
+      DATABRICKS_TOKEN: ${DATABRICKS_TOKEN}
       RAW_DATA_DIR: /data/raw
     volumes:
       - ./data/raw:/data/raw
