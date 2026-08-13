@@ -165,6 +165,15 @@ uv run pytest collectors analytics app   # Python: collectors + analytics + API
 cd frontend && npm run test               # frontend: Vitest
 ```
 
+**On macOS**, if a workspace package import mysteriously fails right after a
+clean `uv sync` (`ModuleNotFoundError: No module named 'aws_collector'` etc.),
+run `./scripts/fix-macos-venv.sh` first — a real, diagnosed macOS/CPython/`uv`
+interaction bug, not a project issue (Docker/Linux is unaffected). Re-run it
+after every `uv sync`, since `uv` re-triggers the underlying condition each
+time. Full root cause in
+[`docs/decisions/0002-phase2-raw-store-and-collector-architecture.md`](docs/decisions/0002-phase2-raw-store-and-collector-architecture.md),
+item 9.
+
 ## Credentials
 
 Every credential (AWS access key, Snowflake service-user password,

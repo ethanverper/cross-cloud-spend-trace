@@ -242,9 +242,8 @@ def get_spend(
             by_attribution = by_attribution[pd.to_datetime(by_attribution["usage_date"]) <= pd.Timestamp(end_d)]
 
     totals_by_source: list[dict[str, Any]] = []
-    if not store.spend_by_source_date.empty:
-        base = store.spend_by_source_date if not source else store.spend_by_source_date[store.spend_by_source_date["source"] == source]
-        grouped = base.groupby("source", as_index=False).agg(
+    if not by_source_date.empty:
+        grouped = by_source_date.groupby("source", as_index=False).agg(
             total_cost_usd=("cost_usd_total", "sum"),
             total_records=("record_count", "sum"),
             days_observed=("usage_date", "nunique"),

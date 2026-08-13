@@ -185,60 +185,66 @@ export function Results() {
         </TabsContent>
 
         <TabsContent value="forecast" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader className="flex-row items-start justify-between">
-              <div>
-                <CardTitle className="text-base">AWS -- month-end forecast</CardTitle>
-                <CardDescription>Run-rate projection (observed solid line) vs. trend projection (dashed), extending to month end.</CardDescription>
-              </div>
-              {awsForecast && (
-                <StatHighlight value={awsForecast.run_rate_month_end_projection} color="var(--signal)" format={(n) => formatUsd(n)} />
-              )}
-            </CardHeader>
-            <CardContent>
-              {forecast.loading && <Skeleton className="h-64 w-full" />}
-              {awsForecast && <ForecastChart series={awsPreviewSeries} daysObserved={awsForecast.days_observed} />}
-              {forecast.data?.aws_reconciled && (
-                <p className="mt-3 text-xs text-muted-foreground font-mono">
-                  AWS's own native forecast: {formatUsd(forecast.data.aws_reconciled.aws_native_forecast_usd)} for{" "}
-                  {formatDate(forecast.data.aws_reconciled.aws_native_forecast_period_start)} →{" "}
-                  {formatDate(forecast.data.aws_reconciled.aws_native_forecast_period_end)} (different period window than our
-                  whole-month projection -- not a direct apples-to-apples comparison).
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {(!sourceParam || sourceParam === "aws") && (
+            <Card>
+              <CardHeader className="flex-row items-start justify-between">
+                <div>
+                  <CardTitle className="text-base">AWS -- month-end forecast</CardTitle>
+                  <CardDescription>Run-rate projection (observed solid line) vs. trend projection (dashed), extending to month end.</CardDescription>
+                </div>
+                {awsForecast && (
+                  <StatHighlight value={awsForecast.run_rate_month_end_projection} color="var(--signal)" format={(n) => formatUsd(n)} />
+                )}
+              </CardHeader>
+              <CardContent>
+                {forecast.loading && <Skeleton className="h-64 w-full" />}
+                {awsForecast && <ForecastChart series={awsPreviewSeries} daysObserved={awsForecast.days_observed} />}
+                {forecast.data?.aws_reconciled && (
+                  <p className="mt-3 text-xs text-muted-foreground font-mono">
+                    AWS's own native forecast: {formatUsd(forecast.data.aws_reconciled.aws_native_forecast_usd)} for{" "}
+                    {formatDate(forecast.data.aws_reconciled.aws_native_forecast_period_start)} →{" "}
+                    {formatDate(forecast.data.aws_reconciled.aws_native_forecast_period_end)} (different period window than our
+                    whole-month projection -- not a direct apples-to-apples comparison).
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Snowflake -- native-unit forecast</CardTitle>
-              <CardDescription>No dollar cost data exists for Snowflake yet, so this is a real, honest credits/duration projection instead of a fabricated $0.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 gap-4">
-              {forecast.data?.native_units
-                .filter((r) => r.source === "snowflake")
-                .map((r) => (
-                  <div key={r.usage_unit} className="rounded-md border border-border p-4">
-                    <div className="font-mono text-xs text-muted-foreground mb-1">{r.usage_unit}</div>
-                    <StatHighlight
-                      value={r.run_rate_month_end_projection}
-                      size="sm"
-                      color="var(--source-snowflake)"
-                      format={(n) => formatNumber(n, 3)}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      from {formatNumber(r.total_so_far)} {r.usage_unit} observed over {r.days_observed} day(s)
-                    </p>
-                  </div>
-                ))}
-            </CardContent>
-          </Card>
+          {(!sourceParam || sourceParam === "snowflake") && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Snowflake -- native-unit forecast</CardTitle>
+                <CardDescription>No dollar cost data exists for Snowflake yet, so this is a real, honest credits/duration projection instead of a fabricated $0.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid sm:grid-cols-2 gap-4">
+                {forecast.data?.native_units
+                  .filter((r) => r.source === "snowflake")
+                  .map((r) => (
+                    <div key={r.usage_unit} className="rounded-md border border-border p-4">
+                      <div className="font-mono text-xs text-muted-foreground mb-1">{r.usage_unit}</div>
+                      <StatHighlight
+                        value={r.run_rate_month_end_projection}
+                        size="sm"
+                        color="var(--source-snowflake)"
+                        format={(n) => formatNumber(n, 3)}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        from {formatNumber(r.total_so_far)} {r.usage_unit} observed over {r.days_observed} day(s)
+                      </p>
+                    </div>
+                  ))}
+              </CardContent>
+            </Card>
+          )}
 
-          <Callout tone="info">
-            Databricks produces no forecast row at all yet -- its collector never populates `cost_usd` for serverless
-            runs (no node type exposed to price against), and one real job run isn't enough history for a native-unit
-            run-rate either. A structural gap, disclosed rather than papered over with a synthetic number.
-          </Callout>
+          {(!sourceParam || sourceParam === "databricks") && (
+            <Callout tone="info">
+              Databricks produces no forecast row at all yet -- its collector never populates `cost_usd` for serverless
+              runs (no node type exposed to price against), and one real job run isn't enough history for a native-unit
+              run-rate either. A structural gap, disclosed rather than papered over with a synthetic number.
+            </Callout>
+          )}
         </TabsContent>
 
         <TabsContent value="suggestions" className="space-y-4 mt-6">

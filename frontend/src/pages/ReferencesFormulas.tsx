@@ -112,7 +112,7 @@ trend_forecast = intercept + slope * days_in_month
                   text: (
                     <>
                       <span className="font-mono text-xs">idle_flat_cost_resource</span> -- fires when a resource's
-                      daily cost is flat (zero variance) across &gt;= N consecutive days; quantifies up to 100% of
+                      daily cost is flat (zero variance) across {">="} N consecutive days; quantifies up to 100% of
                       accumulated cost as conditionally avoidable if the resource is unneeded.
                     </>
                   ),
