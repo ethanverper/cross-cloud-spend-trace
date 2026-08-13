@@ -31,11 +31,17 @@ export function StatHighlight({
   const canAnimate = countUp && typeof value === "number" && Number.isFinite(value)
   const numeric = typeof value === "number" ? value : 0
   const renderNumber = (n: number) => (format ? format(n) : Number.isInteger(n) ? String(n) : n.toPrecision(4).replace(/\.?0+$/, ""))
-  const [display, setDisplay] = useState<string>(canAnimate ? renderNumber(0) : String(value))
+  // A non-animating numeric value must still go through `format`/renderNumber
+  // -- falling back to raw `String(value)` for a number bypasses `format`
+  // entirely and prints unrounded floats (e.g. "0.0006876166632341298"
+  // instead of "0.00"). Only a non-numeric value (a pre-formatted string
+  // like "29%") should ever hit the raw String() path.
+  const staticDisplay = typeof value === "number" ? renderNumber(value) : String(value)
+  const [display, setDisplay] = useState<string>(canAnimate ? renderNumber(0) : staticDisplay)
 
   useEffect(() => {
     if (!canAnimate) {
-      setDisplay(String(value))
+      setDisplay(staticDisplay)
       return
     }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

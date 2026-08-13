@@ -11,5 +11,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/real-world", label: "Real World" },
   { to: "/tools", label: "Tools & Tech" },
   { to: "/references", label: "References" },
+  { to: "/learning", label: "Learning" },
   { to: "/about", label: "About" },
 ]

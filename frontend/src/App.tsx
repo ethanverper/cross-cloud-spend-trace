@@ -10,6 +10,7 @@ import { Interpretation } from "@/pages/Interpretation"
 import { RealWorld } from "@/pages/RealWorld"
 import { ToolsAndTechnologies } from "@/pages/ToolsAndTechnologies"
 import { ReferencesFormulas } from "@/pages/ReferencesFormulas"
+import { Learning } from "@/pages/Learning"
 import { About } from "@/pages/About"
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="/real-world" element={<RealWorld />} />
               <Route path="/tools" element={<ToolsAndTechnologies />} />
               <Route path="/references" element={<ReferencesFormulas />} />
+              <Route path="/learning" element={<Learning />} />
               <Route path="/about" element={<About />} />
             </Routes>
           </AppShell>
