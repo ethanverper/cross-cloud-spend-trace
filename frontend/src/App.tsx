@@ -11,6 +11,7 @@ import { RealWorld } from "@/pages/RealWorld"
 import { ToolsAndTechnologies } from "@/pages/ToolsAndTechnologies"
 import { ReferencesFormulas } from "@/pages/ReferencesFormulas"
 import { Learning } from "@/pages/Learning"
+import { Glossary } from "@/pages/Glossary"
 import { About } from "@/pages/About"
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/tools" element={<ToolsAndTechnologies />} />
               <Route path="/references" element={<ReferencesFormulas />} />
               <Route path="/learning" element={<Learning />} />
+              <Route path="/glossary" element={<Glossary />} />
               <Route path="/about" element={<About />} />
             </Routes>
           </AppShell>

@@ -17,7 +17,7 @@ export function About() {
 
   return (
     <div>
-      <PageHeader eyebrow="09 / About & Credits" title="About this project" />
+      <PageHeader eyebrow="10 / About & Credits" title="About this project" />
 
       <div className="grid md:grid-cols-3 gap-6">
         <Card className="md:col-span-2">
