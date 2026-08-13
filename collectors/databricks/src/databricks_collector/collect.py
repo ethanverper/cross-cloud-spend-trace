@@ -17,7 +17,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
-from spend_lens_common.schema import UsageRecord
+from cross_cloud_spend_trace_common.schema import UsageRecord
 
 from .client import DatabricksClient
 from .pricing import estimate_cost

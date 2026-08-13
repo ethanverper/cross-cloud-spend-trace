@@ -1,8 +1,8 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # spend-lens Phase 3 — Databricks-side pipeline
+# MAGIC # cross-cloud-spend-trace Phase 3 — Databricks-side pipeline
 # MAGIC
-# MAGIC Self-contained (no `spend_lens_analytics` package install required —
+# MAGIC Self-contained (no `cross_cloud_spend_trace_analytics` package install required —
 # MAGIC uses only `pyspark`, which ships on every Databricks Runtime) so it
 # MAGIC can run as-is once the raw store is reachable from this workspace.
 # MAGIC
@@ -12,14 +12,14 @@
 # MAGIC scoped to exactly `jobs`/`clusters` (confirmed via direct API probes —
 # MAGIC every DBFS/Workspace/Unity-Catalog call returns a real 403
 # MAGIC `"...required scopes: files"` / `"...workspace"` / `"...unity-catalog"`),
-# MAGIC so `analytics/src/spend_lens_analytics/databricks_sync.py` cannot
+# MAGIC so `analytics/src/cross_cloud_spend_trace_analytics/databricks_sync.py` cannot
 # MAGIC upload `data/raw/` anywhere this notebook could read it from. Import
 # MAGIC this notebook into the workspace and run it once Ethan issues a
 # MAGIC broader-scoped token and re-runs `sync_raw_store_to_dbfs()` — the code
 # MAGIC below itself is real, runnable PySpark, not a stub.
 # MAGIC
 # MAGIC The full-featured version of this pipeline (all 4 anomaly/forecast/
-# MAGIC rules modules, unit-tested) lives in `analytics/src/spend_lens_analytics/`
+# MAGIC rules modules, unit-tested) lives in `analytics/src/cross_cloud_spend_trace_analytics/`
 # MAGIC and is what's actually verified against real data today, running
 # MAGIC locally — see that package for the complete implementation. This
 # MAGIC notebook reimplements the core mechanism (unified model, one anomaly
@@ -28,8 +28,8 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("raw_dir", "dbfs:/FileStore/spend_lens/raw", "Raw store (DBFS)")
-dbutils.widgets.text("output_dir", "dbfs:/FileStore/spend_lens/processed", "Output dir (DBFS)")
+dbutils.widgets.text("raw_dir", "dbfs:/FileStore/cross_cloud_spend_trace/raw", "Raw store (DBFS)")
+dbutils.widgets.text("output_dir", "dbfs:/FileStore/cross_cloud_spend_trace/processed", "Output dir (DBFS)")
 raw_dir = dbutils.widgets.get("raw_dir")
 output_dir = dbutils.widgets.get("output_dir")
 
@@ -41,7 +41,7 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import DoubleType, StringType, StructField, StructType
 from pyspark.sql.window import Window
 
-# Same explicit schema as analytics/src/spend_lens_analytics/schema.py —
+# Same explicit schema as analytics/src/cross_cloud_spend_trace_analytics/schema.py —
 # duplicated here deliberately so this notebook has zero dependency on the
 # local package being installed on the cluster. See that module's
 # docstring for why an explicit schema (not Spark's automatic Parquet
@@ -82,7 +82,7 @@ display(events.groupBy("source").count())
 # COMMAND ----------
 
 # MAGIC %md ### Anomaly check: leave-one-out z-score on Snowflake query duration
-# MAGIC Same algorithm as `spend_lens_analytics.anomaly.detect_anomalies` — see
+# MAGIC Same algorithm as `cross_cloud_spend_trace_analytics.anomaly.detect_anomalies` — see
 # MAGIC that module for the full version (min-group-size / zero-variance
 # MAGIC handling included). This is the condensed inline version.
 

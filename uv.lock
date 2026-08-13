@@ -15,11 +15,11 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "spend-lens-analytics",
-    "spend-lens-aws-collector",
-    "spend-lens-common",
-    "spend-lens-databricks-collector",
-    "spend-lens-snowflake-collector",
+    "cross-cloud-spend-trace-analytics",
+    "cross-cloud-spend-trace-aws-collector",
+    "cross-cloud-spend-trace-common",
+    "cross-cloud-spend-trace-databricks-collector",
+    "cross-cloud-spend-trace-snowflake-collector",
 ]
 
 [[package]]
@@ -330,6 +330,127 @@ sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
 ]
+
+[[package]]
+name = "cross-cloud-spend-trace-analytics"
+version = "0.1.0"
+source = { editable = "analytics" }
+dependencies = [
+    { name = "cross-cloud-spend-trace-common" },
+    { name = "pyspark" },
+    { name = "requests" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cross-cloud-spend-trace-common", editable = "collectors/common" },
+    { name = "pyspark", specifier = ">=3.5,<4.0" },
+    { name = "requests", specifier = ">=2.31" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3" }]
+
+[[package]]
+name = "cross-cloud-spend-trace-aws-collector"
+version = "0.1.0"
+source = { editable = "collectors/aws" }
+dependencies = [
+    { name = "boto3" },
+    { name = "cross-cloud-spend-trace-common" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "boto3", specifier = ">=1.34" },
+    { name = "cross-cloud-spend-trace-common", editable = "collectors/common" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3" }]
+
+[[package]]
+name = "cross-cloud-spend-trace-common"
+version = "0.1.0"
+source = { editable = "collectors/common" }
+dependencies = [
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pandas", specifier = ">=2.2" },
+    { name = "pyarrow", specifier = ">=17.0" },
+    { name = "pydantic", specifier = ">=2.7" },
+    { name = "python-dotenv", specifier = ">=1.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3" }]
+
+[[package]]
+name = "cross-cloud-spend-trace-databricks-collector"
+version = "0.1.0"
+source = { editable = "collectors/databricks" }
+dependencies = [
+    { name = "cross-cloud-spend-trace-common" },
+    { name = "requests" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cross-cloud-spend-trace-common", editable = "collectors/common" },
+    { name = "requests", specifier = ">=2.32" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3" }]
+
+[[package]]
+name = "cross-cloud-spend-trace-snowflake-collector"
+version = "0.1.0"
+source = { editable = "collectors/snowflake" }
+dependencies = [
+    { name = "cross-cloud-spend-trace-common" },
+    { name = "snowflake-connector-python" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cross-cloud-spend-trace-common", editable = "collectors/common" },
+    { name = "snowflake-connector-python", specifier = ">=3.12" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3" }]
 
 [[package]]
 name = "cryptography"
@@ -1025,127 +1146,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f233
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
 ]
-
-[[package]]
-name = "spend-lens-analytics"
-version = "0.1.0"
-source = { editable = "analytics" }
-dependencies = [
-    { name = "pyspark" },
-    { name = "requests" },
-    { name = "spend-lens-common" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pyspark", specifier = ">=3.5,<4.0" },
-    { name = "requests", specifier = ">=2.31" },
-    { name = "spend-lens-common", editable = "collectors/common" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.3" }]
-
-[[package]]
-name = "spend-lens-aws-collector"
-version = "0.1.0"
-source = { editable = "collectors/aws" }
-dependencies = [
-    { name = "boto3" },
-    { name = "spend-lens-common" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "boto3", specifier = ">=1.34" },
-    { name = "spend-lens-common", editable = "collectors/common" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.3" }]
-
-[[package]]
-name = "spend-lens-common"
-version = "0.1.0"
-source = { editable = "collectors/common" }
-dependencies = [
-    { name = "pandas" },
-    { name = "pyarrow" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pandas", specifier = ">=2.2" },
-    { name = "pyarrow", specifier = ">=17.0" },
-    { name = "pydantic", specifier = ">=2.7" },
-    { name = "python-dotenv", specifier = ">=1.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.3" }]
-
-[[package]]
-name = "spend-lens-databricks-collector"
-version = "0.1.0"
-source = { editable = "collectors/databricks" }
-dependencies = [
-    { name = "requests" },
-    { name = "spend-lens-common" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "requests", specifier = ">=2.32" },
-    { name = "spend-lens-common", editable = "collectors/common" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.3" }]
-
-[[package]]
-name = "spend-lens-snowflake-collector"
-version = "0.1.0"
-source = { editable = "collectors/snowflake" }
-dependencies = [
-    { name = "snowflake-connector-python" },
-    { name = "spend-lens-common" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "snowflake-connector-python", specifier = ">=3.12" },
-    { name = "spend-lens-common", editable = "collectors/common" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.3" }]
 
 [[package]]
 name = "tomlkit"

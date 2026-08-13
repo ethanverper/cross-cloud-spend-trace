@@ -4,7 +4,7 @@ Ethan's machine — a PySpark job actually running on Databricks compute has
 no way to read a path on his laptop. This module is the "explicit upload/
 sync step" that gap called for, built against the real DBFS REST API using
 the same `DATABRICKS_HOST`/`DATABRICKS_TOKEN` credentials the Phase 2
-collector already uses (`spend_lens_common.config.require_env`, same
+collector already uses (`cross_cloud_spend_trace_common.config.require_env`, same
 pattern as `databricks_collector.client.DatabricksClient`).
 
 **Why DBFS and not a Unity Catalog volume**: this trial workspace's actual
@@ -26,7 +26,7 @@ from pathlib import Path
 
 import requests
 
-from spend_lens_common.config import require_env
+from cross_cloud_spend_trace_common.config import require_env
 
 REQUEST_TIMEOUT_SECONDS = 60
 # DBFS add-block accepts at most 1MB of *base64-encoded* data per call;
@@ -79,12 +79,12 @@ class DbfsClient:
 
 
 def sync_raw_store_to_dbfs(
-    local_raw_dir: Path, dbfs_prefix: str = "dbfs:/FileStore/spend_lens/raw"
+    local_raw_dir: Path, dbfs_prefix: str = "dbfs:/FileStore/cross_cloud_spend_trace/raw"
 ) -> list[str]:
     """Uploads every `data/raw/<source>/<table>/ingested_date=.../*.parquet`
     file to the same relative path under `dbfs_prefix`, so a Databricks
     notebook can then do exactly
-    `spark.read.schema(RAW_STORE_SCHEMA).parquet("dbfs:/FileStore/spend_lens/raw/*/*/*/*.parquet")`
+    `spark.read.schema(RAW_STORE_SCHEMA).parquet("dbfs:/FileStore/cross_cloud_spend_trace/raw/*/*/*/*.parquet")`
     — the same glob shape `ingest.read_raw_store` already uses locally,
     just rooted at a DBFS path instead of a local filesystem path. Returns
     the list of DBFS paths written, for the caller to log/verify against.

@@ -94,7 +94,7 @@ def run(
     as_of: date | None = None,
     spark: SparkSession | None = None,
 ) -> dict[str, DataFrame]:
-    """Local/plain-Python entrypoint (`python -m spend_lens_analytics.pipeline`).
+    """Local/plain-Python entrypoint (`python -m cross_cloud_spend_trace_analytics.pipeline`).
     On Databricks, don't call this — use `databricks_notebook.py`, which
     calls `build_outputs`/`write_outputs` directly against the notebook's
     ambient `spark` session and a `dbfs:/...` path instead of constructing
@@ -102,7 +102,7 @@ def run(
     owns_session = spark is None
     if spark is None:
         spark = (
-            SparkSession.builder.appName("spend-lens-phase3")
+            SparkSession.builder.appName("cross-cloud-spend-trace-phase3")
             .master("local[*]")
             .config("spark.ui.enabled", "false")
             .getOrCreate()

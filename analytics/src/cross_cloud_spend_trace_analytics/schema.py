@@ -1,5 +1,5 @@
 """Explicit PySpark schema for the raw store, mirroring
-`spend_lens_common.schema.UsageRecord` field-for-field.
+`cross_cloud_spend_trace_common.schema.UsageRecord` field-for-field.
 
 Real gotcha hit building this: `spark.read.parquet("data/raw/*/*/*/*.parquet")`
 without an explicit schema fails Spark's Parquet schema-merge step. Each
@@ -28,7 +28,7 @@ from pyspark.sql.types import (
 )
 
 # `usage_date`/`period_start`/`period_end`/`ingested_at` are written by
-# `spend_lens_common.storage.write_records` via `model_dump(mode="json")`,
+# `cross_cloud_spend_trace_common.storage.write_records` via `model_dump(mode="json")`,
 # which serializes dates/datetimes to ISO-8601 strings — so on disk these
 # are Parquet `string` columns, not native date/timestamp columns. Reading
 # them as `StringType` here and parsing explicitly in `ingest.py` (rather

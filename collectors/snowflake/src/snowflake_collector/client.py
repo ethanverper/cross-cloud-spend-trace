@@ -10,7 +10,7 @@ import os
 
 import snowflake.connector
 
-from spend_lens_common.config import require_env
+from cross_cloud_spend_trace_common.config import require_env
 
 
 def connect():

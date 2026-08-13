@@ -19,7 +19,7 @@ REAL = pytest.mark.skipif(
 
 @REAL
 def test_full_pipeline_against_real_data(spark, tmp_path):
-    from spend_lens_analytics.pipeline import run
+    from cross_cloud_spend_trace_analytics.pipeline import run
 
     outputs = run(
         raw_dir=str(REAL_RAW_DIR),

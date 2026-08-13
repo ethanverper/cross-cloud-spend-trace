@@ -20,7 +20,7 @@ from datetime import date, datetime, timezone
 
 import snowflake.connector
 
-from spend_lens_common.schema import UsageRecord
+from cross_cloud_spend_trace_common.schema import UsageRecord
 
 logger = logging.getLogger(__name__)
 

@@ -16,9 +16,9 @@ COPY collectors/common/pyproject.toml collectors/common/pyproject.toml
 COPY collectors/aws/pyproject.toml collectors/aws/pyproject.toml
 COPY collectors/snowflake/pyproject.toml collectors/snowflake/pyproject.toml
 COPY collectors/databricks/pyproject.toml collectors/databricks/pyproject.toml
-RUN uv sync --frozen --no-dev --package spend-lens-databricks-collector
+RUN uv sync --frozen --no-dev --package cross-cloud-spend-trace-databricks-collector
 
 COPY collectors/common/src collectors/common/src
 COPY collectors/databricks/src collectors/databricks/src
 
-ENTRYPOINT ["uv", "run", "--frozen", "--no-dev", "--package", "spend-lens-databricks-collector", "python", "-m", "databricks_collector"]
+ENTRYPOINT ["uv", "run", "--frozen", "--no-dev", "--package", "cross-cloud-spend-trace-databricks-collector", "python", "-m", "databricks_collector"]

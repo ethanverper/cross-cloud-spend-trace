@@ -25,7 +25,7 @@ import os
 import pytest
 import requests
 
-from spend_lens_analytics.databricks_sync import DbfsClient
+from cross_cloud_spend_trace_analytics.databricks_sync import DbfsClient
 
 pytestmark = pytest.mark.skipif(
     not (os.environ.get("DATABRICKS_HOST") and os.environ.get("DATABRICKS_TOKEN")),
@@ -36,10 +36,10 @@ pytestmark = pytest.mark.skipif(
 def test_dbfs_upload_currently_blocked_by_token_scope(tmp_path):
     client = DbfsClient()
     probe_file = tmp_path / "probe.txt"
-    probe_file.write_text("spend-lens Phase 3 DBFS reachability probe")
+    probe_file.write_text("cross-cloud-spend-trace Phase 3 DBFS reachability probe")
 
     with pytest.raises(requests.exceptions.HTTPError) as exc_info:
-        client.put_file(probe_file, "dbfs:/FileStore/spend_lens/_reachability_probe.txt")
+        client.put_file(probe_file, "dbfs:/FileStore/cross_cloud_spend_trace/_reachability_probe.txt")
 
     response = exc_info.value.response
     assert response.status_code == 403

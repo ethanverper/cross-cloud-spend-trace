@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import logging
 
-from spend_lens_common.config import raw_data_dir
-from spend_lens_common.storage import write_records
+from cross_cloud_spend_trace_common.config import raw_data_dir
+from cross_cloud_spend_trace_common.storage import write_records
 
 from .client import cost_explorer_client
 from .collect import (

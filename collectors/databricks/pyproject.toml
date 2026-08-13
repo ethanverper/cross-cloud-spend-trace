@@ -1,11 +1,11 @@
 [project]
-name = "spend-lens-databricks-collector"
+name = "cross-cloud-spend-trace-databricks-collector"
 version = "0.1.0"
 description = "Databricks Jobs API collector — lands job-run history and cluster runtime/instance-type data (used as a compute-cost proxy) into the shared raw store. system.billing.usage and the Account Console billing API are confirmed unavailable on this trial workspace (Phase 1 finding) — this collector deliberately does not attempt that path."
 requires-python = ">=3.11"
 dependencies = [
     "requests>=2.32",
-    "spend-lens-common",
+    "cross-cloud-spend-trace-common",
 ]
 
 [dependency-groups]
@@ -14,7 +14,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-spend-lens-common = { workspace = true }
+cross-cloud-spend-trace-common = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

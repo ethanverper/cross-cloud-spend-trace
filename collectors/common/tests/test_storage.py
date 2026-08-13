@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from spend_lens_common.schema import UsageRecord
-from spend_lens_common.storage import write_records
+from cross_cloud_spend_trace_common.schema import UsageRecord
+from cross_cloud_spend_trace_common.storage import write_records
 
 
 def _record(**overrides) -> UsageRecord:

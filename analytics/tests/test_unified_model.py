@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from spend_lens_analytics.ingest import read_raw_store
-from spend_lens_analytics.unified_model import (
+from cross_cloud_spend_trace_analytics.ingest import read_raw_store
+from cross_cloud_spend_trace_analytics.unified_model import (
     enrich_events,
     spend_by_attribution,
     spend_by_source_date,

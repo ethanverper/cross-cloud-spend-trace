@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from spend_lens_analytics.anomaly import detect_anomalies
-from spend_lens_analytics.ingest import read_raw_store
-from spend_lens_analytics.unified_model import enrich_events
+from cross_cloud_spend_trace_analytics.anomaly import detect_anomalies
+from cross_cloud_spend_trace_analytics.ingest import read_raw_store
+from cross_cloud_spend_trace_analytics.unified_model import enrich_events
 
 REAL_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 

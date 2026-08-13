@@ -1,7 +1,7 @@
 # spend-lens — Roadmap
 
 Domain: technology
-Path: `projects/technology/spend-lens/`
+Path: `projects/technology/cross-cloud-spend-trace/`
 Selected from: [`docs/ideation/technology/2026-08-12-data-engineering-shortlist.md`](../../../../docs/ideation/technology/2026-08-12-data-engineering-shortlist.md) ("Credit Watch", idea 3 of 5 — substantially reshaped through direct conversation with Ethan into **spend-lens**; see `docs/decisions/0001-project-selection-and-reshaping.md` for what changed and why)
 Stakeholder: Ethan (human operator)
 Started: 2026-08-12

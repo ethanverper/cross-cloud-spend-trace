@@ -1,4 +1,4 @@
-"""Shared building blocks used by every spend-lens source collector.
+"""Shared building blocks used by every cross-cloud-spend-trace source collector.
 
 Kept deliberately small: a normalized record schema (`schema.UsageRecord`),
 a raw-store writer (`storage.write_records`), and environment-variable

@@ -59,7 +59,7 @@ def test_warehouse_metering_history_returns_well_formed_records(conn):
             assert record.usage_quantity >= 0
 
 
-def test_connection_reaches_spend_lens_warehouse_and_role(conn):
+def test_connection_reaches_cross_cloud_spend_trace_warehouse_and_role(conn):
     cursor = conn.cursor()
     try:
         cursor.execute("SELECT CURRENT_WAREHOUSE(), CURRENT_ROLE()")

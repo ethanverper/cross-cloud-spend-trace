@@ -1,11 +1,11 @@
 [project]
-name = "spend-lens-aws-collector"
+name = "cross-cloud-spend-trace-aws-collector"
 version = "0.1.0"
 description = "AWS Cost Explorer/Billing collector — lands daily cost-by-service usage, month-end forecast, and active service dimensions into the shared raw store."
 requires-python = ">=3.11"
 dependencies = [
     "boto3>=1.34",
-    "spend-lens-common",
+    "cross-cloud-spend-trace-common",
 ]
 
 [dependency-groups]
@@ -14,7 +14,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-spend-lens-common = { workspace = true }
+cross-cloud-spend-trace-common = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

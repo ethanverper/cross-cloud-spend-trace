@@ -9,15 +9,15 @@ from pathlib import Path
 
 import pytest
 
-from spend_lens_analytics.ingest import read_raw_store
-from spend_lens_analytics.rules import (
+from cross_cloud_spend_trace_analytics.ingest import read_raw_store
+from cross_cloud_spend_trace_analytics.rules import (
     databricks_cost_visibility_gap,
     idle_flat_cost_resource,
     repeated_identical_query,
     run_all_rules,
     unfiltered_table_scan,
 )
-from spend_lens_analytics.unified_model import enrich_events
+from cross_cloud_spend_trace_analytics.unified_model import enrich_events
 
 REAL_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 REAL = pytest.mark.skipif(

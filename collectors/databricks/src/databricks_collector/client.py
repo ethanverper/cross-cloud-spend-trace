@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import requests
 
-from spend_lens_common.config import require_env
+from cross_cloud_spend_trace_common.config import require_env
 
 REQUEST_TIMEOUT_SECONDS = 30
 

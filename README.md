@@ -1,4 +1,4 @@
-# spend-lens
+# cross-cloud-spend-trace
 
 Real-time visibility into exactly which query, job, or pipeline is driving
 cloud/warehouse spend — across AWS, Snowflake, and Databricks — before the
@@ -51,8 +51,8 @@ docs/
 ## The raw store
 
 Every collector normalizes its source's native response onto one shared
-record shape (`spend_lens_common.schema.UsageRecord`) and writes it as
-Parquet:
+record shape (`cross_cloud_spend_trace_common.schema.UsageRecord`) and
+writes it as Parquet:
 
 ```
 data/raw/<source>/<table>/ingested_date=YYYY-MM-DD/<table>-<id>.parquet

@@ -1,11 +1,11 @@
 [project]
-name = "spend-lens-snowflake-collector"
+name = "cross-cloud-spend-trace-snowflake-collector"
 version = "0.1.0"
 description = "Snowflake query-history-based cost attribution collector — lands QUERY_HISTORY and WAREHOUSE_METERING_HISTORY (ACCOUNT_USAGE) into the shared raw store."
 requires-python = ">=3.11"
 dependencies = [
     "snowflake-connector-python>=3.12",
-    "spend-lens-common",
+    "cross-cloud-spend-trace-common",
 ]
 
 [dependency-groups]
@@ -14,7 +14,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-spend-lens-common = { workspace = true }
+cross-cloud-spend-trace-common = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

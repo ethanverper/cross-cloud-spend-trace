@@ -12,7 +12,7 @@ REAL_RAW_DIR = REPO_ROOT / "data" / "raw"
 @pytest.fixture(scope="session")
 def spark():
     session = (
-        SparkSession.builder.appName("spend-lens-analytics-tests")
+        SparkSession.builder.appName("cross-cloud-spend-trace-analytics-tests")
         .master("local[2]")
         .config("spark.ui.enabled", "false")
         .config("spark.sql.shuffle.partitions", "2")

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from datetime import date, datetime, timedelta, timezone
 
-from spend_lens_common.schema import UsageRecord
+from cross_cloud_spend_trace_common.schema import UsageRecord
 
 logger = logging.getLogger(__name__)
 

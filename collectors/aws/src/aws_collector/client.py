@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import boto3
 
-from spend_lens_common.config import require_env
+from cross_cloud_spend_trace_common.config import require_env
 
 # Cost Explorer is a global AWS service reachable only via the us-east-1
 # endpoint, regardless of which region any other resource lives in.
